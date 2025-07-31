@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 const dotenv = require('dotenv');
 const cors = require('cors');
 const path = require('path');
-const multer=require('multer')
+const multer = require('multer');
 
 // Load env variables
 dotenv.config();
@@ -13,18 +13,18 @@ const app = express();
 
 // Middlewares
 app.use(cors());
-app.use(express.json()); // To parse JSON requests
-app.use(express.urlencoded({ extended: true })); // For form data
-app.use('/uploads', express.static(path.join(__dirname, 'uploads'))); 
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Routes
-
 const productRoutes = require('./routes/productRoutes');
-
 const authRoutes = require('./routes/authroute');
 const buyerCartRoutes = require('./routes/buyerCartRoutes');
 const orderRoutes = require('./routes/orderRoutes');
-const adminsellerRoutes = require("./routes/adminSellerRoutes");
+const adminsellerRoutes = require('./routes/adminSellerRoutes');
+const brandRoutes=require('./routes/brandAuthorizationRoutes')
+
 app.use('/api/buyer', require('./routes/buyerAddressRoutes'));
 app.use('/api/addresses', require('./routes/addressRoutes'));
 // app.use('/api/payments,', require('./routes/paymentRoutes'));
@@ -33,12 +33,12 @@ app.use('/api/coupan', require('./routes/couponRoutes'));
 app.use('/api/support', require('./routes/supportRoute'));
 app.use('/api/adminseller', adminsellerRoutes);
 app.use('/api/orders', orderRoutes);
+app.use('/api/brand', brandRoutes);
 app.use('/api/buyer', buyerCartRoutes);
-// Route Middleware
 app.use('/auth', authRoutes);
 app.use('/api/products', productRoutes);
 
-// Configure multer storage
+// ✅ Configure multer storage
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
     cb(null, 'uploads/');
@@ -48,18 +48,28 @@ const storage = multer.diskStorage({
     cb(null, uniqueSuffix + '-' + file.originalname);
   }
 });
-const upload = multer({ storage: storage });
 
-// Upload endpoint (photo or video)
+// ✅ Optional: Restrict to image, video, and PDF types
+const fileFilter = (req, file, cb) => {
+  const allowedTypes = ['image/jpeg', 'image/png', 'video/mp4', 'application/pdf'];
+  if (allowedTypes.includes(file.mimetype)) {
+    cb(null, true);
+  } else {
+    cb(new Error('Only .jpeg, .png, .mp4, and .pdf files are allowed'), false);
+  }
+};
+
+const upload = multer({ storage, fileFilter });
+
+// ✅ Upload endpoint (photo, video, or PDF)
 app.post('/upload', upload.single('media'), (req, res) => {
   if (!req.file) {
-    return res.status(400).send('No file uploaded.');
+    return res.status(400).send('No file uploaded or invalid file type.');
   }
 
   const fileUrl = `http://localhost:5000/uploads/${req.file.filename}`;
   res.json({ fileUrl, filename: req.file.filename });
 });
-
 
 // Root Route
 app.get('/', (req, res) => {

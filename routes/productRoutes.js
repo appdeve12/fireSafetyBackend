@@ -5,7 +5,7 @@ const controller = require('../controllers/productController');
 
 // Buyer routes
 router.get('/', auth, controller.getAllProductsForBuyer);
-router.get('/new', auth, controller.newproduct);
+router.get('/new-arrival', auth, controller.newproduct);
 router.get("/best-sellers",auth, controller.getBestSellingProducts);
 router.get("/popular-brands",auth, controller.getPopularBrands);
 router.get('/:id', auth, controller.getProductById);

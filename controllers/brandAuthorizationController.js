@@ -2,8 +2,10 @@ const BrandAuthorization = require('../models/BrandAuthorizationSchema');
 
 // Seller requests brand authorization
 exports.requestBrandAuthorization = async (req, res) => {
+    console.log("req.user._id",req.user.id)
   try {
     const { brandName, tmReferenceNumber, trademarkCertificate, authorizationLetter, purchaseInvoice } = req.body;
+    console.log(" brandName, tmReferenceNumber, trademarkCertificate, authorizationLetter, purchaseInvoice ", brandName, tmReferenceNumber, trademarkCertificate, authorizationLetter, purchaseInvoice )
 
     // Check if brand request already exists
     const existing = await BrandAuthorization.findOne({ seller: req.user._id, brandName });
@@ -12,7 +14,7 @@ exports.requestBrandAuthorization = async (req, res) => {
     }
 
     const request = await BrandAuthorization.create({
-      seller: req.user._id,
+      seller: req.user.id,
       brandName,
       tmReferenceNumber,
       trademarkCertificate,
@@ -25,6 +27,23 @@ exports.requestBrandAuthorization = async (req, res) => {
     res.status(500).json({ message: "Error requesting brand authorization", error: error.message });
   }
 };
+exports.allBrandAuthorization = async (req, res) => {
+  console.log("req.user.id", req.user.id);
+  try {
+    const allbrandperseller = await BrandAuthorization.find({ seller: req.user.id });
+
+    res.status(200).json({
+      message: "All brand requests for the seller fetched successfully",
+      allbrandperseller,
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: "Error requesting brand authorization",
+      error: error.message,
+    });
+  }
+};
+
 
 // Admin approves/rejects brand
 exports.reviewBrandAuthorization = async (req, res) => {
@@ -35,7 +54,7 @@ exports.reviewBrandAuthorization = async (req, res) => {
     if (!brandAuth) return res.status(404).json({ message: "Brand request not found" });
 
     brandAuth.status = status;
-    brandAuth.verifiedBy = req.user._id;
+    brandAuth.verifiedBy = req.user.id;
     brandAuth.verifiedAt = new Date();
     brandAuth.rejectionReason = status === 'rejected' ? rejectionReason : null;
     await brandAuth.save();

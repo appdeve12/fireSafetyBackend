@@ -11,6 +11,7 @@ const protectAdmin = (req, res, next) => {
 
 // Seller requests brand authorization
 router.post('/request', auth, brandAuthCtrl.requestBrandAuthorization);
+router.get('/all', auth, brandAuthCtrl.allBrandAuthorization);
 
 // Admin reviews brand authorization
 router.patch('/:id/review', auth, protectAdmin, brandAuthCtrl.reviewBrandAuthorization);

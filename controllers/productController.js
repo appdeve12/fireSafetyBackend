@@ -218,6 +218,7 @@ exports.newproduct= async (req, res) => {
   try {
     const newProducts = await Product.find({ isApproved: true })
       .sort({ createdAt: -1 })
+            .select('category images name')
       .limit(10);
 console.log("newpro",newProducts)
     res.json({ products: newProducts });
