@@ -67,7 +67,7 @@ app.post('/upload', upload.single('media'), (req, res) => {
     return res.status(400).send('No file uploaded or invalid file type.');
   }
 
-  const fileUrl = `http://localhost:5000/uploads/${req.file.filename}`;
+  const fileUrl = `/uploads/${req.file.filename}`;
   res.json({ fileUrl, filename: req.file.filename });
 });
 

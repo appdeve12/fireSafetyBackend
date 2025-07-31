@@ -1,6 +1,5 @@
 const Product = require('../models/Product');
 const Order=require('../models/Order')
-const BrandAuthorization = require('../models/BrandAuthorizationSchema');
 
 // BUYER: Get all approved products
 exports.getAllProductsForBuyer = async (req, res) => {
@@ -99,46 +98,24 @@ exports.getProductById = async (req, res) => {
   }
 };
 
-
-
-
+// SELLER: Create a new product
 exports.createProductAsSeller = async (req, res) => {
+  if (req.user.role !== 'seller') {
+    return res.status(403).json({ message: 'Unauthorized' });
+  }
+
   try {
-    // ✅ Ensure only sellers can create products
-    if (req.user.role !== 'seller') {
-      return res.status(403).json({ message: 'Unauthorized' });
-    }
-
-    const { brandName, ...productData } = req.body;
-
-    // ✅ Check if brand is approved for this seller
-    const brandAuth = await BrandAuthorization.findOne({
-      seller: req.user.id,
-      brandName: brandName,
-      status: 'approved'
-    });
-
-    if (!brandAuth) {
-      return res.status(400).json({
-        message: 'Brand not authorized or approval pending. Please complete brand authorization first.'
-      });
-    }
-
-    // ✅ Create product with brand reference
     const newProduct = new Product({
-      ...productData,
+      ...req.body,
       seller: req.user.id,
-      brandAuth: brandAuth._id, // link directly
       isApproved: false
     });
-
     const savedProduct = await newProduct.save();
     res.status(201).json(savedProduct);
   } catch (err) {
     res.status(400).json({ error: err.message });
   }
 };
-
 
 // SELLER: Get own products
 exports.getSellerProducts = async (req, res) => {
@@ -213,19 +190,21 @@ exports.deleteProductAsSeller = async (req, res) => {
   }
 };
 // GET /api/products/new
-exports.newproduct= async (req, res) => {
-  console.log("newarriavlproduct")
+exports.newproduct = async (req, res) => {
+  console.log("Fetching new arrival products...");
   try {
     const newProducts = await Product.find({ isApproved: true })
       .sort({ createdAt: -1 })
-            .select('category images name')
-      .limit(10);
-console.log("newpro",newProducts)
+      .limit(10)
+      .select('category images name'); // Select only these fields
+
+    console.log("New Products:", newProducts);
     res.json({ products: newProducts });
   } catch (err) {
     res.status(500).json({ error: 'Server Error' });
   }
 };
+
 // GET /api/brands/:brand/products
 exports.brandnamebyproduct= async (req, res) => {
   try {
