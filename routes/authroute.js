@@ -20,8 +20,8 @@ router.post('/admin/register', authController.registerAdmin);
 router.post('/login', authController.login);
 router.put("/updateprofile",auth,authController.updateProfile)
 
-router.put("/sellers/:sellerId/approve-profile-update", auth, protectAdmin, authController.approveSellerProfileUpdate);
-router.put("/sellers/:sellerId/reject-profile-update", auth, protectAdmin, authController.rejectSellerProfileUpdate);
+router.put("/sellers/approve-profile-update/:id", auth, protectAdmin, authController.approveSellerProfileUpdate);
+router.put("/sellers/reject-profile-update/:id", auth, protectAdmin, authController.rejectSellerProfileUpdate);
 
 
 router.post('/forgot-password', authController.forgotPassword);

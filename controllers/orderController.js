@@ -239,7 +239,15 @@ exports.getSellerOrders = async (req, res) => {
       ...filter,
       items: { $elemMatch: { seller: req.user.id } }
     })
-      .populate("buyer", "fullName  ")
+      .populate({
+        path: "buyer",                        // Step 1: Populate the 'buyer' field of Order
+        select: "fullName addresses",        // Only include these fields from the Buyer
+        populate: {                          // Step 2: Now populate the Buyer's 'addresses' field
+          path: "addresses",                 // Tells Mongoose to look inside buyer.addresses
+          model: "Address"                   // Tell it to use the Address model
+        }
+      })
+
       .populate("items.product")
       .lean();
 
@@ -355,7 +363,16 @@ exports.getAllOrders = async (req, res) => {
     }
 
     const orders = await Order.find(filter)
-      .populate('buyer', 'name email') // You can add more buyer fields if needed
+    .populate({
+        path: "buyer",                        // Step 1: Populate the 'buyer' field of Order
+        select: "fullName addresses email",        // Only include these fields from the Buyer
+        populate: {                          // Step 2: Now populate the Buyer's 'addresses' field
+          path: "addresses",                 // Tells Mongoose to look inside buyer.addresses
+          model: "Address"                   // Tell it to use the Address model
+        }
+      })
+
+      .populate("items.product")
       .sort({ placedAt: -1 });
 
     res.status(200).json({ total: orders.length, orders });
@@ -408,9 +425,9 @@ exports.adminUpdateOrderStatus = async (req, res) => {
   try {
     const { orderId } = req.params;
     const { status } = req.body;
-    console.log(orderId,status)
+    console.log(orderId, status)
 
-const order = await Order.findOne({ orderId: orderId });
+    const order = await Order.findOne({ orderId: orderId });
 
     console.log(order)
     order.status = status;

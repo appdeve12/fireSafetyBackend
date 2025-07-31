@@ -129,7 +129,7 @@ exports.login = async (req, res) => {
       role = 'seller';
     }
     if (!user) {
-      user = await Buyer.findOne({ email });
+      user = await Buyer.findOne({ email }).populate("addresses")
       role = 'buyer';
     }
 
@@ -206,7 +206,7 @@ exports.approveSellerProfileUpdate = async (req, res) => {
 
   try {
     const seller = await Seller.findById(sellerId);
-    if (!seller || !seller.pendingUpdates) {
+    if (!seller) {
       return res.status(404).json({ msg: 'No pending updates for this seller' });
     }
 

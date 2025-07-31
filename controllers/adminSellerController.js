@@ -9,6 +9,15 @@ exports.getAllSellers = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
+exports.getSellerById = async (req, res) => {
+  try {
+    const seller = await Seller.findById(req.params.id);
+    res.json(seller);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
 
 // APPROVE seller
 exports.approveSeller = async (req, res) => {

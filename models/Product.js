@@ -6,7 +6,8 @@ const productSchema = new mongoose.Schema({
   name: { type: String, required: true },
   description: { type: String },
   category: { type: String, required: true },
-  brand: { type: String },
+  brandAuth: { type: mongoose.Schema.Types.ObjectId, ref: 'BrandAuthorization', required: true },
+
   images: [{ type: String }],
   price: { type: Number }, // Optional if variation-specific prices used
   discount: { type: Number },

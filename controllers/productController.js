@@ -1,4 +1,6 @@
 const Product = require('../models/Product');
+const Order=require('../models/Order')
+const BrandAuthorization = require('../models/BrandAuthorizationSchema');
 
 // BUYER: Get all approved products
 exports.getAllProductsForBuyer = async (req, res) => {
@@ -97,24 +99,46 @@ exports.getProductById = async (req, res) => {
   }
 };
 
-// SELLER: Create a new product
-exports.createProductAsSeller = async (req, res) => {
-  if (req.user.role !== 'seller') {
-    return res.status(403).json({ message: 'Unauthorized' });
-  }
 
+
+
+exports.createProductAsSeller = async (req, res) => {
   try {
-    const newProduct = new Product({
-      ...req.body,
+    // ✅ Ensure only sellers can create products
+    if (req.user.role !== 'seller') {
+      return res.status(403).json({ message: 'Unauthorized' });
+    }
+
+    const { brandName, ...productData } = req.body;
+
+    // ✅ Check if brand is approved for this seller
+    const brandAuth = await BrandAuthorization.findOne({
       seller: req.user.id,
+      brandName: brandName,
+      status: 'approved'
+    });
+
+    if (!brandAuth) {
+      return res.status(400).json({
+        message: 'Brand not authorized or approval pending. Please complete brand authorization first.'
+      });
+    }
+
+    // ✅ Create product with brand reference
+    const newProduct = new Product({
+      ...productData,
+      seller: req.user.id,
+      brandAuth: brandAuth._id, // link directly
       isApproved: false
     });
+
     const savedProduct = await newProduct.save();
     res.status(201).json(savedProduct);
   } catch (err) {
     res.status(400).json({ error: err.message });
   }
 };
+
 
 // SELLER: Get own products
 exports.getSellerProducts = async (req, res) => {
@@ -186,6 +210,105 @@ exports.deleteProductAsSeller = async (req, res) => {
     res.json({ message: 'Product deleted successfully' });
   } catch (err) {
     res.status(500).json({ error: err.message });
+  }
+};
+// GET /api/products/new
+exports.newproduct= async (req, res) => {
+  console.log("newarriavlproduct")
+  try {
+    const newProducts = await Product.find({ isApproved: true })
+      .sort({ createdAt: -1 })
+      .limit(10);
+console.log("newpro",newProducts)
+    res.json({ products: newProducts });
+  } catch (err) {
+    res.status(500).json({ error: 'Server Error' });
+  }
+};
+// GET /api/brands/:brand/products
+exports.brandnamebyproduct= async (req, res) => {
+  try {
+    const brandName = req.params.brand;
+    const products = await Product.find({ brand: brandName, isApproved: true });
+    res.json({ success: true, products });
+  } catch (error) {
+    console.error("Error fetching products by brand:", error);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+};
+
+exports.getBestSellingProducts = async (req, res) => {
+  try {
+    const limit = parseInt(req.query.limit) || 10; // limit results, default 10
+
+    const bestSellers = await Order.aggregate([
+      { $unwind: "$items" }, // break items array
+      {
+        $group: {
+          _id: "$items.product",
+          totalSold: { $sum: "$items.quantity" }
+        }
+      },
+      { $sort: { totalSold: -1 } }, // highest sold first
+      { $limit: limit },
+      {
+        $lookup: {
+          from: "products", // collection name
+          localField: "_id",
+          foreignField: "_id",
+          as: "productDetails"
+        }
+      },
+      { $unwind: "$productDetails" }
+    ]);
+
+    res.json({ success: true, data: bestSellers });
+  } catch (error) {
+    console.error("Error fetching best selling products:", error);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+};
+exports.getPopularBrands = async (req, res) => {
+  try {
+    const limit = parseInt(req.query.limit) || 5;
+    const productLimit = parseInt(req.query.productLimit) || 5;
+
+    const popularBrands = await Order.aggregate([
+      { $unwind: "$items" },
+      {
+        $lookup: {
+          from: "products",
+          localField: "items.product",
+          foreignField: "_id",
+          as: "productData"
+        }
+      },
+      { $unwind: "$productData" },
+      {
+        $group: {
+          _id: {
+            brand: "$productData.brand",
+            brandImage: "$productData.brandImage" // 🆕 include brand image
+          },
+          totalSold: { $sum: "$items.quantity" }
+        }
+      },
+      { $sort: { totalSold: -1 } },
+      { $limit: limit }
+    ]);
+
+    // Fetch products for each brand
+    for (let brand of popularBrands) {
+      const products = await Product.find({ brand: brand._id.brand })
+        .limit(productLimit)
+        .select("name price images category brand brandImage");
+      brand.products = products;
+    }
+
+    res.json({ success: true, data: popularBrands });
+  } catch (error) {
+    console.error("Error fetching popular brands:", error);
+    res.status(500).json({ success: false, message: "Server error" });
   }
 };
 

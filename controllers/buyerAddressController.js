@@ -1,26 +1,33 @@
 const Address = require('../models/Address');
 const Buyer = require('../models/user.buyer');
 
-// 📌 Add Address
 exports.addAddress = async (req, res) => {
   try {
-    const address = new Address({ ...req.body, buyer: req.user.id });
+    const buyer = await Buyer.findById(req.user.id);
+    if (!buyer) return res.status(404).json({ error: 'Buyer not found' });
 
-    // If marked default, unset others
+    // If default, unset previous
     if (req.body.isDefault) {
       await Address.updateMany({ buyer: req.user.id }, { isDefault: false });
     }
 
+    const address = new Address({ ...req.body, buyer: req.user.id });
     const saved = await address.save();
 
-    // Optionally link to buyer
-    await Buyer.findByIdAndUpdate(req.user.id, { $push: { addresses: saved._id } });
+    // Add to buyer
+    await Buyer.findByIdAndUpdate(
+      req.user.id,
+      { $push: { addresses: saved._id } },
+      { new: true, useFindAndModify: false }
+    );
 
     res.status(201).json({ message: 'Address added', address: saved });
   } catch (err) {
+    console.error('Error adding address:', err);
     res.status(500).json({ error: err.message });
   }
 };
+
 
 // 📌 Get All Addresses
 exports.getAddresses = async (req, res) => {

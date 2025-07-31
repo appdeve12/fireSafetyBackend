@@ -4,7 +4,8 @@ const {
   getAllSellers,
   approveSeller,
   toggleBlockSeller,
-  blockSeller
+  blockSeller,
+  getSellerById 
 } = require('../controllers/adminSellerController');
 const auth = require('../middleware/authMiddleware');
 const protectAdmin = (req, res, next) => {
@@ -13,6 +14,7 @@ const protectAdmin = (req, res, next) => {
 };
 
 router.get('/sellers',auth,protectAdmin, getAllSellers);
+router.get('/seller/:id',auth,protectAdmin, getSellerById);
 router.put('/sellers/:id/approve',auth,protectAdmin, approveSeller);
 router.put('/sellers/:id/block',auth,protectAdmin, blockSeller);
 router.put('/sellers/:id/toggle-block',auth,protectAdmin, toggleBlockSeller);
