@@ -89,7 +89,7 @@ subcategory,
 // BUYER: Get single approved product by ID
 exports.getProductById = async (req, res) => {
   try {
-    const product = await Product.findById(req.params.id);
+    const product = await Product.findById(req.params.id).populate("brandAuth");
     if (!product || !product.isApproved) {
       return res.status(404).json({ message: 'Product not found' });
     }
