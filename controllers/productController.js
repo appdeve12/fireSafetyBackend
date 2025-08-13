@@ -10,7 +10,7 @@ exports.getAllProductsForBuyer = async (req, res) => {
       minPrice,
       maxPrice,
       brand,
-
+subcategory,
 
       hasDiscount,
       sortBy,
@@ -28,6 +28,7 @@ exports.getAllProductsForBuyer = async (req, res) => {
 
     // 📂 Filter by category
     if (category) filter.category = category;
+    if (subcategory) filter.subcategory=subcategory;
 
     // 💰 Price Range filter
     if (minPrice || maxPrice) {
@@ -124,7 +125,7 @@ exports.getSellerProducts = async (req, res) => {
   }
 
   try {
-    const products = await Product.find({ seller: req.user.id });
+    const products = await Product.find({ seller: req.user.id }).populate("brandAuth")
     res.json(products);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -172,7 +173,7 @@ exports.updateProductAsSeller = async (req, res) => {
     res.status(400).json({ error: err.message });
   }
 };
-
+    
 // SELLER: Delete own product
 exports.deleteProductAsSeller = async (req, res) => {
   if (req.user.role !== 'seller') {
@@ -196,7 +197,7 @@ exports.newproduct = async (req, res) => {
     const newProducts = await Product.find({ isApproved: true })
       .sort({ createdAt: -1 })
       .limit(10)
-      .select('category images name'); // Select only these fields
+      .select('subcategory category images name'); // Select only these fields
 
     console.log("New Products:", newProducts);
     res.json({ products: newProducts });
@@ -320,7 +321,9 @@ exports.getProductsOfSpecificSellerForAdmin = async (req, res) => {
 
 
     const products = await Product.find({ seller: sellerId })
-      .populate('seller', 'name email');
+      .populate('seller', 'name email')
+      .populate("brandAuth")
+
 
     res.status(200).json({
       success: true,

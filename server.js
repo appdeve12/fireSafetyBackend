@@ -37,7 +37,7 @@ app.use('/api/brand', brandRoutes);
 app.use('/api/buyer', buyerCartRoutes);
 app.use('/auth', authRoutes);
 app.use('/api/products', productRoutes);
-
+app.use('/api/banner',require('./routes/bannerRoutes'))
 // ✅ Configure multer storage
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {

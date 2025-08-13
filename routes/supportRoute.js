@@ -2,10 +2,10 @@ const express = require("express");
 const router = express.Router();
 const authMiddleware = require("../middleware/authMiddleware")
 const supportController = require("../controllers/supportController")
-//seller side
-// // Create new support ticket
-// router.post("/create", authMiddleware, supportController.createTicket)
-// // View all my tickets
+
+// Create new support ticket
+router.post("/create", authMiddleware, supportController.createTicket)
+// View all my tickets
 // router.get("/my-tickets", authMiddleware, supportController.getMyTickets)
 // // View specific ticket by ID
 // router.get("/ticket/:ticketId", authMiddleware, supportController.getTicketById)

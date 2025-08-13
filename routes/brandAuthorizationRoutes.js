@@ -14,6 +14,8 @@ router.post('/request', auth, brandAuthCtrl.requestBrandAuthorization);
 router.get('/all', auth, brandAuthCtrl.allBrandAuthorization);
 
 // Admin reviews brand authorization
-router.patch('/:id/review', auth, protectAdmin, brandAuthCtrl.reviewBrandAuthorization);
+router.get('/allbrands',auth,brandAuthCtrl.allBrandRequest)
+router.patch('/review/:id', auth, protectAdmin, brandAuthCtrl.reviewBrandAuthorization);
+
 
 module.exports = router;

@@ -44,7 +44,16 @@ exports.allBrandAuthorization = async (req, res) => {
   }
 };
 
+exports.allBrandRequest=async (req,res)=>{
+  try{
+const allbrandrequests=await BrandAuthorization.find();
+res.status(200).json({
+  message:"All brands fetch succefully",allbrandrequests
+})
+  }catch(error){
 
+  }
+}
 // Admin approves/rejects brand
 exports.reviewBrandAuthorization = async (req, res) => {
   try {
