@@ -193,18 +193,34 @@ exports.deleteProductAsSeller = async (req, res) => {
 // GET /api/products/new
 exports.newproduct = async (req, res) => {
   console.log("Fetching new arrival products...");
-  try {
-    const newProducts = await Product.find({ isApproved: true })
-      .sort({ createdAt: -1 })
-      .limit(10)
-      .select('subcategory category images name'); // Select only these fields
 
-    console.log("New Products:", newProducts);
-    res.json({ products: newProducts });
+  try {
+    const result = await Product.aggregate([
+      { $match: { isApproved: true } },
+      { $sort: { createdAt: -1 } },
+      { $limit: 10 },
+      {
+        $group: {
+          _id: "$subcategory",
+          products: {
+            $push: {
+              id:"$_id",
+              name: "$name",
+              images: "$images",
+              category: "$category"
+            }
+          }
+        }
+      }
+    ]);
+
+    res.json({ result });
   } catch (err) {
+    console.error("Aggregation Error:", err);
     res.status(500).json({ error: 'Server Error' });
   }
 };
+
 
 // GET /api/brands/:brand/products
 exports.brandnamebyproduct= async (req, res) => {
