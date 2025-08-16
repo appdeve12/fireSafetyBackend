@@ -13,7 +13,7 @@ exports.addAddress = async (req, res) => {
 
     const address = new Address({ ...req.body, buyer: req.user.id });
     const saved = await address.save();
-
+ 
     // Add to buyer
     await Buyer.findByIdAndUpdate(
       req.user.id,
@@ -22,7 +22,7 @@ exports.addAddress = async (req, res) => {
     );
 
     res.status(201).json({ message: 'Address added', address: saved });
-  } catch (err) {
+  } catch (err) { 
     console.error('Error adding address:', err);
     res.status(500).json({ error: err.message });
   }

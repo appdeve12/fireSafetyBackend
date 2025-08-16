@@ -10,8 +10,8 @@ const productSchema = new mongoose.Schema({
   images: [{ type: String }],
 
   // Pricing
-  mrp: { type: Number, required: true }, // Maximum Retail Price
-  price: { type: Number, required: true }, // Selling Price
+  mrp: { type: Number}, // Maximum Retail Price
+  price: { type: Number}, // Selling Price
   discount: { type: Number, default: 0 }, // Optional discount percentage
 
   stock: { type: Number },
