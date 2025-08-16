@@ -109,7 +109,8 @@ exports.createProductAsSeller = async (req, res) => {
     const newProduct = new Product({
       ...req.body,
       seller: req.user.id,
-      isApproved: false
+      isApproved: false,
+          isCombo: false
     });
     const savedProduct = await newProduct.save();
     res.status(201).json(savedProduct);
@@ -117,6 +118,48 @@ exports.createProductAsSeller = async (req, res) => {
     res.status(400).json({ error: err.message });
   }
 };
+exports.createProductAsSeller = async (req, res) => {
+  if (req.user.role !== 'seller') {
+    return res.status(403).json({ message: 'Unauthorized' });
+  }
+
+  try {
+    const newProduct = new Product({
+      ...req.body,
+      seller: req.user.id,
+      isApproved: false,
+      isCombo: false
+    });
+    const savedProduct = await newProduct.save();
+    res.status(201).json(savedProduct);
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+};
+
+exports.createComboProduct = async (req, res) => {
+  if (req.user.role !== 'seller') {
+    return res.status(403).json({ message: 'Unauthorized' });
+  }
+
+  try {
+    const comboProduct = new Product({
+      ...req.body,
+      seller: req.user.id,
+      isCombo: true,
+      isApproved: false
+    });
+
+    const savedCombo = await comboProduct.save();
+    res.status(201).json(savedCombo);
+  } catch (err) {
+    console.error(err);
+    res.status(400).json({ error: err.message });
+  }
+};
+
+
+
 
 // SELLER: Get own products
 exports.getSellerProducts = async (req, res) => {

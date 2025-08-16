@@ -4,8 +4,8 @@ const productSchema = new mongoose.Schema({
 
   name: { type: String, required: true },
   description: { type: String },
-  category: { type: String, required: true },
-  brandAuth: { type: mongoose.Schema.Types.ObjectId, ref: 'BrandAuthorization', required: true },
+  category: { type: String, default:"firesafety" },
+  brandAuth: { type: mongoose.Schema.Types.ObjectId, ref: 'BrandAuthorization' },
 
   images: [{ type: String }],
 
@@ -21,6 +21,7 @@ const productSchema = new mongoose.Schema({
   warrantyPolicy: { type: String }, // "1 year warranty on manufacturing defects"
   safetyInformation: { type: String }, // "Keep away from heat and sunlight"
   returnPolicy: { type: String }, // "7 days return policy"
+  tophighlights: { type: String },
 
   deleteRequested: { type: Boolean, default: false },
   deleteRequestedAt: { type: Date },
@@ -49,25 +50,15 @@ const productSchema = new mongoose.Schema({
       sku: { type: String, required: true }
     }
   ],
-
-  // what do you understand by Nodejs
-  // why nodejs is run time environment
-  // what are the maine features of nodejs
-  // why is noodejs is popular
-  // what do ypou understand by event driven arctiture
-  // what do you understand by asynronous and non blocing 
-  // // why npodejs is singlethreede if it is single threde hpow ti handle multiple request
-  // wxplain event loop
-  //event loop phases
-  //modules in nodejs 
-  //explin deeply all import modules in nodesj file sysytem,path,etc..
-  //what do you understand by comon js and es module 
-  //hpw tp debug ypur nodejs application
-  // how to performaction optimisaipn of nodejs 
-  //diferrnece between pooces.nexttick,setimmate
-  //what do you understand by clustring,buffer
-  // what do you understand by strems in nodejs
-  //what do you understna by ungauht exceptin in nodejs
+  // Combo Product Support
+  isCombo: { type: Boolean, default: false },
+  comboItems: [
+    {
+      product: { type: mongoose.Schema.Types.ObjectId, ref: 'Product', required: true },
+      variationLabel: { type: String, required: true },
+      quantity: { type: Number, required: true }
+    }
+  ],
 
 
   isApproved: { type: Boolean, default: false },

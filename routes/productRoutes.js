@@ -6,8 +6,8 @@ const controller = require('../controllers/productController');
 // Buyer routes
 router.get('/', auth, controller.getAllProductsForBuyer);
 router.get('/new-arrival', auth, controller.newproduct);
-router.get("/best-sellers",auth, controller.getBestSellingProducts);
-router.get("/popular-brands",auth, controller.getPopularBrands);
+router.get("/best-sellers", auth, controller.getBestSellingProducts);
+router.get("/popular-brands", auth, controller.getPopularBrands);
 router.get('/:id', auth, controller.getProductById);
 
 
@@ -21,11 +21,11 @@ router.put('/seller/:id', auth, controller.updateProductAsSeller);
 router.delete('/seller/:id', auth, controller.deleteProductAsSeller);
 // Seller requests product deletion (soft delete request)
 router.patch(
-    '/seller/request-delete/:id',
-    auth,
-    controller.requestDeleteProductAsSeller
+  '/seller/request-delete/:id',
+  auth,
+  controller.requestDeleteProductAsSeller
 );
-
+router.post('/combo/create', auth, controller.createComboProduct);
 
 // Admin routes
 router.get('/admin/all', auth, controller.getAllProductsForAdmin);
@@ -35,9 +35,9 @@ router.put('/admin/approve/:id', auth, controller.approveProduct);
 router.delete('/admin/:id', auth, controller.deleteProductAsAdmin);
 // Admin permanently deletes product after review
 router.delete(
-    '/admin/delete/:id',
-    auth,
-    controller.adminDeleteProductAfterReview
+  '/admin/delete/:id',
+  auth,
+  controller.adminDeleteProductAfterReview
 );
 // Admin permanently deletes product after review
 // Admin rejects delete request with optional reason
