@@ -18,13 +18,12 @@ router.post('/admin/register', authController.registerAdmin);
 
 // Login (common for all roles)
 router.post('/login', authController.login);
-router.put("/updateprofile",auth,authController.updateProfile)
+router.put("/updateprofile", auth, authController.updateProfile)
 
 router.put("/sellers/approve-profile-update/:id", auth, protectAdmin, authController.approveSellerProfileUpdate);
 router.put("/sellers/reject-profile-update/:id", auth, protectAdmin, authController.rejectSellerProfileUpdate);
-
+router.get('/userdata', auth, authController.fetchparticularuser)
 
 router.post('/forgot-password', authController.forgotPassword);
 router.post('/reset-password', authController.resetPassword);
 module.exports = router;
-                       

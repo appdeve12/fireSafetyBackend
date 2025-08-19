@@ -363,7 +363,7 @@ exports.getAllOrders = async (req, res) => {
     }
 
     const orders = await Order.find(filter)
-    .populate({
+      .populate({
         path: "buyer",                        // Step 1: Populate the 'buyer' field of Order
         select: "fullName addresses email",        // Only include these fields from the Buyer
         populate: {                          // Step 2: Now populate the Buyer's 'addresses' field
