@@ -9,7 +9,7 @@ const addressSchema = new mongoose.Schema({
 
   type: {
     type: String,
-    enum: ['home', 'office', 'other'],
+    enum: ['home', 'work', 'other'],
     default: 'home'
   },
 
@@ -19,7 +19,9 @@ const addressSchema = new mongoose.Schema({
   city: { type: String },
   state: { type: String },
   country: { type: String },
-
+landmark:{type:String},
+  receiverName: { type: String },           // added receiverName
+  receiverPhoneNumber: { type: String },    // added receiverPhoneNumber
   isDefault: { type: Boolean, default: false },
 
   createdAt: { type: Date, default: Date.now }

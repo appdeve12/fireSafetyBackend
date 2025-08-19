@@ -7,7 +7,7 @@ exports.createAddress = async (req, res) => {
     const {
       type, label, fullAddress,
       pincode, city, state, country,
-      isDefault
+      isDefault,landmark,receiverPhoneNumber,receiverName
     } = req.body;
 
     // 🧠 If isDefault is true, set all other addresses to false
@@ -24,7 +24,8 @@ exports.createAddress = async (req, res) => {
       city,
       state,
       country,
-      isDefault
+      isDefault,
+      landmark,receiverPhoneNumber,receiverName
     });
 
     await newAddress.save();
