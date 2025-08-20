@@ -21,7 +21,7 @@ const nocSchema = new mongoose.Schema({
 
   purpose: {
     type: String,
-    enum: ['COMMERCIAL_BUILDING', 'OFFICE', 'SHOP', 'OTHER'],
+    enum: ['COMMERCIAL_BUILDING', 'OFFICE', 'SHOP', 'OTHER','HOTEL','HOSPITAL','SCHOOL','COMPLEX'],
     required: true
   },
 
