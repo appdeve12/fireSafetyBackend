@@ -25,7 +25,8 @@ addresses: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Address' }],
 
   // 🛒 Cart & Wishlist
   cart: [cartItemSchema],
-  wishlist: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Product' }]
+  wishlist: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Product' }],
+    nocRequests: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Noc' }]
 });
 
 module.exports = mongoose.model('Buyer', buyerSchema);

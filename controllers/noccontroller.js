@@ -1,4 +1,5 @@
 const Noc=require("../models/NocUsers");
+const buyer=require("../models/user.buyer")
 exports.registerUserForNoc=async(req,res)=>{
     try{
         console.log("user")
@@ -6,17 +7,14 @@ exports.registerUserForNoc=async(req,res)=>{
         console.log("name,mobile,state,city,size,areaUnit,purpose",name,mobile,state,city,size,areaUnit,purpose)
         const BuyerId=req.user.id;
         console.log(BuyerId)
-        const checkalredyregister=await Noc.findOne({buyer:BuyerId});
-        console.log("checkalredyregister",checkalredyregister)
-        if(checkalredyregister){
-            return res.status(400).json({
-                message:'already resgister for noc'
-            })
-        }
+    
         const nocuser= new Noc({
             name,mobile,state,city,size,areaUnit,purpose,buyer:BuyerId
         })
 await nocuser.save();
+buyer.nocRequests.push(nocuser._id);
+await buyer.save();
+
 res.status(201).json({
     message:"user succedfully register for noc",
     nocuser
