@@ -2,8 +2,8 @@ const Noc=require("../models/NocUsers");
 exports.registerUserForNoc=async(req,res)=>{
     try{
         console.log("user")
-        const {name,mobile,state,city,size,areaUnit,value,purpose}=req.body;
-        console.log("name,mobile,state,city,size,areaUnit,value,purpose",name,mobile,state,city,size,areaUnit,value,purpose)
+        const {name,mobile,state,city,size,areaUnit,purpose}=req.body;
+        console.log("name,mobile,state,city,size,areaUnit,purpose",name,mobile,state,city,size,areaUnit,purpose)
         const BuyerId=req.user.id;
         console.log(BuyerId)
         const checkalredyregister=await Noc.findOne({buyer:BuyerId});

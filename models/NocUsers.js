@@ -17,11 +17,11 @@ const nocSchema = new mongoose.Schema({
     required: true
   },
 
-  value: { type: Number, required: true }, // Cost or estimated value
+
 
   purpose: {
     type: String,
-    enum: ['COMMERCIAL_BUILDING', 'OFFICE', 'SHOP', 'OTHER','HOTEL','HOSPITAL','SCHOOL','COMPLEX'],
+    enum: ['Commercial_Building', 'Office', 'Shop', 'Other','Hotel','Hospital','School','Complex'],
     required: true
   },
 
