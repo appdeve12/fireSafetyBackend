@@ -266,6 +266,7 @@ const nodemailer = require('nodemailer');
 
 const otpMap = new Map(); // Temporary in-memory OTP store (use Redis or DB in production)
 
+
 // Send OTP
 exports.forgotPassword = async (req, res) => {
   const { email } = req.body;

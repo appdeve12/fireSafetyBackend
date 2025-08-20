@@ -95,24 +95,36 @@ exports.addToWishlist = async (req, res) => {
 exports.removeFromCart = async (req, res) => {
   try {
     const buyer = await Buyer.findById(req.user.id);
-    const { productId, variationId } = req.body;
+    const { productId, variationId, quantity = 1 } = req.body;
 
-    buyer.cart = buyer.cart.filter((item) => {
+    const existingItemIndex = buyer.cart.findIndex((item) => {
       const sameProduct = item.product.toString() === productId;
       const sameVariation = variationId
         ? item.variationId?.toString() === variationId.toString()
-        : !item.variationId; // No variationId in both = match
+        : !item.variationId;
 
-      return !(sameProduct && sameVariation);
+      return sameProduct && sameVariation;
     });
 
+    if (existingItemIndex === -1) {
+      return res.status(404).json({ message: 'Item not found in cart' });
+    }
+
+    // Decrease quantity or remove item
+    const cartItem = buyer.cart[existingItemIndex];
+    if (cartItem.quantity > quantity) {
+      buyer.cart[existingItemIndex].quantity -= quantity;
+    } else {
+      // Remove item if quantity is less than or equal to the requested reduction
+      buyer.cart.splice(existingItemIndex, 1);
+    }
+
     await buyer.save();
-    res.status(200).json({ message: 'Removed from cart', cart: buyer.cart });
+    res.status(200).json({ message: 'Cart updated', cart: buyer.cart });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 };
-
 
 
 // ❌ Remove from Wishlist

@@ -11,6 +11,7 @@ dotenv.config();
 // Initialize express app
 const app = express();
 
+
 // Middlewares
 app.use(cors());
 app.use(express.json());
@@ -24,6 +25,8 @@ const buyerCartRoutes = require('./routes/buyerCartRoutes');
 const orderRoutes = require('./routes/orderRoutes');
 const adminsellerRoutes = require('./routes/adminSellerRoutes');
 const brandRoutes=require('./routes/brandAuthorizationRoutes')
+const nocRoutes=require("./routes/nocUserRoute");
+app.use('/api/noc',nocRoutes)
 
 app.use('/api/buyer', require('./routes/buyerAddressRoutes'));
 app.use('/api/addresses', require('./routes/addressRoutes'));
@@ -91,3 +94,5 @@ const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`🚀 Server is running on port ${PORT}`);
 });
+
+
