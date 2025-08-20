@@ -14,7 +14,7 @@ exports.registerUserForNoc=async(req,res)=>{
             })
         }
         const nocuser= new Noc({
-            name,mobile,state,city,size,areaUnit,value,purpose,buyer:BuyerId
+            name,mobile,state,city,size,areaUnit,purpose,buyer:BuyerId
         })
 await nocuser.save();
 res.status(201).json({
