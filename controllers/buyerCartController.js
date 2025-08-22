@@ -125,6 +125,30 @@ exports.removeFromCart = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
+// ❌ Completely Remove Product (with or without variation) from Cart
+exports.removeItemCompletelyFromCart = async (req, res) => {
+  try {
+    const buyer = await Buyer.findById(req.user.id);
+    const { productId, variationId } = req.body;
+
+    // Filter out the item from the cart
+    buyer.cart = buyer.cart.filter((item) => {
+      const sameProduct = item.product.toString() === productId;
+      const sameVariation = variationId
+        ? item.variationId?.toString() === variationId.toString()
+        : !item.variationId;
+
+      // Keep only items that don't match the product+variation
+      return !(sameProduct && sameVariation);
+    });
+
+    await buyer.save();
+
+    res.status(200).json({ message: 'Item completely removed from cart', cart: buyer.cart });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
 
 
 // ❌ Remove from Wishlist

@@ -365,14 +365,22 @@ exports.getAllOrders = async (req, res) => {
     const orders = await Order.find(filter)
       .populate({
         path: "buyer",                        // Step 1: Populate the 'buyer' field of Order
-        select: "fullName addresses email",        // Only include these fields from the Buyer
+        select: "fullName addresses email phoneNumber",        // Only include these fields from the Buyer
         populate: {                          // Step 2: Now populate the Buyer's 'addresses' field
           path: "addresses",                 // Tells Mongoose to look inside buyer.addresses
           model: "Address"                   // Tell it to use the Address model
         }
       })
 
-      .populate("items.product")
+  .populate({
+    path: "items.product",
+    populate: {
+      path: "brandAuth",      // 👈 This tells Mongoose to populate brandAuth inside product
+      model: "BrandAuthorization"
+    }
+  })
+      
+      .populate("items.seller")
       .sort({ placedAt: -1 });
 
     res.status(200).json({ total: orders.length, orders });
