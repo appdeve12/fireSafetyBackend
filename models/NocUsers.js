@@ -17,11 +17,11 @@ const nocSchema = new mongoose.Schema({
     required: true
   },
 
-
+  otherpurpose: { type: String },
 
   purpose: {
     type: String,
-    enum: ['Commercial_Building', 'Office', 'Shop', 'Other','Hotel','Hospital','School','Complex'],
+    enum: ['Commercial_Building', 'Office', 'Shop', 'Other', 'Hotel', 'Hospital', 'School', 'Complex'],
     required: true
   },
 

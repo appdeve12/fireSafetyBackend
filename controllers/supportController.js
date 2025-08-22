@@ -27,25 +27,38 @@ exports.createTicket = async (req, res) => {
 exports.getMyTickets = async (req, res) => {
   try {
     const tickets = await SupportTicket.find({ seller: req.user.id }).sort({ createdAt: -1 });
-    res.json(tickets);
+    return res.json(tickets);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    return res.status(500).json({ error: err.message });
   }
 };
 
 exports.getTicketById = async (req, res) => {
   try {
-    const ticket = await SupportTicket.findOne({ ticketId: req.params.ticketId, seller: req.user.id });
+    const ticket = await SupportTicket.findOne({
+      ticketId: req.params.ticketId,
+      seller: req.user.id
+    })
+      .populate('assignedTo', 'fullName email')
+      .populate('replies.senderId', 'fullName email');
+
     if (!ticket) return res.status(404).json({ message: 'Ticket not found' });
-    res.json(ticket);
+
+    return res.json(ticket);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    return res.status(500).json({ error: err.message });
   }
 };
+
 exports.replyToTicket = async (req, res) => {
   try {
-    const { message, attachments } = req.body;
-    const ticket = await SupportTicket.findOne({ ticketId: req.params.ticketId, seller: req.user.id });
+    const { message, attachments = [] } = req.body;
+
+    const ticket = await SupportTicket.findOne({
+      ticketId: req.params.ticketId,
+      seller: req.user.id
+    });
+
     if (!ticket) return res.status(404).json({ message: 'Ticket not found' });
 
     ticket.replies.push({
@@ -55,25 +68,54 @@ exports.replyToTicket = async (req, res) => {
       attachments
     });
 
+    // Optionally reopen the ticket if it's resolved or closed
+    if (['resolved', 'closed'].includes(ticket.status)) {
+      ticket.status = 'in_progress';
+    }
+
     await ticket.save();
-    res.json({ message: 'Reply sent', ticket });
+    return res.json({ message: 'Reply sent', ticket });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    return res.status(500).json({ error: err.message });
   }
 };
-exports.closeTicket = async (req, res) => {
+exports.submitFeedback = async (req, res) => {
   try {
-    const ticket = await SupportTicket.findOne({ ticketId: req.params.ticketId, seller: req.user.id });
+    const { rating, comment } = req.body;
+
+    if (!rating || rating < 1 || rating > 5) {
+      return res.status(400).json({ message: 'Rating must be between 1 and 5' });
+    }
+
+    const ticket = await SupportTicket.findOne({
+      ticketId: req.params.ticketId,
+      seller: req.user.id
+    });
+
     if (!ticket) return res.status(404).json({ message: 'Ticket not found' });
 
-    ticket.status = 'closed';
+    if (!['resolved', 'closed'].includes(ticket.status)) {
+      return res.status(400).json({ message: 'Feedback can only be given after resolution' });
+    }
+
+    if (ticket.feedback && ticket.feedback.rating) {
+      return res.status(400).json({ message: 'Feedback already submitted' });
+    }
+
+    ticket.feedback = {
+      rating,
+      comment,
+      givenAt: new Date()
+    };
+
     await ticket.save();
 
-    res.json({ message: 'Ticket closed', ticket });
+    return res.status(200).json({ message: 'Feedback submitted', ticket });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    return res.status(500).json({ error: err.message });
   }
 };
+
 exports.getAllTickets = async (req, res) => {
   try {
     const { status, priority } = req.query;
@@ -81,7 +123,10 @@ exports.getAllTickets = async (req, res) => {
     if (status) filter.status = status;
     if (priority) filter.priority = priority;
 
-    const tickets = await SupportTicket.find(filter).populate('seller assignedTo').sort({ createdAt: -1 });
+    const tickets = await SupportTicket.find(filter)
+      .populate('seller assignedTo')
+      .sort({ createdAt: -1 });
+
     res.json(tickets);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -89,28 +134,11 @@ exports.getAllTickets = async (req, res) => {
 };
 exports.getTicketByIdAdmin = async (req, res) => {
   try {
-    const ticket = await SupportTicket.findOne({ ticketId: req.params.ticketId }).populate('seller assignedTo');
+    const ticket = await SupportTicket.findOne({ ticketId: req.params.ticketId })
+      .populate('seller assignedTo');
+
     if (!ticket) return res.status(404).json({ message: 'Ticket not found' });
     res.json(ticket);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-};
-exports.replyToTicketAdmin = async (req, res) => {
-  try {
-    const { message, attachments } = req.body;
-    const ticket = await SupportTicket.findOne({ ticketId: req.params.ticketId });
-    if (!ticket) return res.status(404).json({ message: 'Ticket not found' });
-
-    ticket.replies.push({
-      senderRole: 'admin',
-      senderId: req.user.id,
-      message,
-      attachments
-    });
-
-    await ticket.save();
-    res.json({ message: 'Reply sent', ticket });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -128,9 +156,30 @@ exports.assignTicketToAdmin = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
+exports.replyToTicketAdmin = async (req, res) => {
+  try {
+    const { message, attachments } = req.body;
+
+    const ticket = await SupportTicket.findOne({ ticketId: req.params.ticketId });
+    if (!ticket) return res.status(404).json({ message: 'Ticket not found' });
+
+    ticket.replies.push({
+      senderRole: 'admin',
+      senderId: req.user.id,
+      message,
+      attachments
+    });
+
+    await ticket.save();
+    res.json({ message: 'Reply sent', ticket });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
 exports.updateTicketStatus = async (req, res) => {
   try {
     const { status } = req.body;
+
     const ticket = await SupportTicket.findOne({ ticketId: req.params.ticketId });
     if (!ticket) return res.status(404).json({ message: 'Ticket not found' });
 
@@ -142,18 +191,20 @@ exports.updateTicketStatus = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
-exports.downloadAttachment = async (req, res) => {
+exports.getFeedback = async (req, res) => {
   try {
-    const { ticketId, filename } = req.params;
-    // For S3/Cloud CDN, return redirect
-    const url = `https://your-cdn.com/support/${ticketId}/${filename}`;
-    return res.redirect(url);
+    const ticket = await SupportTicket.findOne({ ticketId: req.params.ticketId });
+    if (!ticket) return res.status(404).json({ message: 'Ticket not found' });
+
+    if (!ticket.feedback || !ticket.feedback.rating) {
+      return res.status(404).json({ message: 'No feedback available' });
+    }
+
+    res.json(ticket.feedback);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 };
-
-
 
 
 

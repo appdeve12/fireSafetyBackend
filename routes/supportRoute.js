@@ -1,41 +1,42 @@
 const express = require("express");
 const router = express.Router();
-const authMiddleware = require("../middleware/authMiddleware")
-const supportController = require("../controllers/supportController")
+const authMiddleware = require("../middleware/authMiddleware");
 
-// Create new support ticket
-router.post("/create", authMiddleware, supportController.createTicket)
-// View all my tickets
-// router.get("/my-tickets", authMiddleware, supportController.getMyTickets)
-// // View specific ticket by ID
-// router.get("/ticket/:ticketId", authMiddleware, supportController.getTicketById)
-// // Reply to ticket
-// router.post("/ticket/:ticketId/reply", authMiddleware, supportController.replyToTicket)
-// // Close ticket
-// router.put("/ticket/:ticketId/close", authMiddleware, supportController.closeTicket)
+const supportController = require("../controllers/supportController");
+const isAdmin = (req, res, next) => {
+  if (req.user?.role !== 'admin') return res.status(403).json({ message: 'Admins only' });
+  next();
+};
+// ===== SELLER ROUTES =====
+router.post('/create', authMiddleware, supportController.createTicket);
+router.get('/my-tickets', authMiddleware, supportController.getMyTickets);
+// router.get('/tickets/:ticketId', authMiddleware, supportController.getTicketById);
+// router.post('/tickets/reply/:ticketId', authMiddleware, supportController.replyToTicket);
+// router.post('/tickets/feedback/:ticketId', authMiddleware, supportController.submitFeedback);
 
+// // ===== ADMIN ROUTES =====
 
-// //admin side
-// // View all tickets (with optional filters)
+// // Get all tickets (admin panel with filters)
+// router.get('/admin/all', authMiddleware, isAdmin, supportController.getAllTickets);
 
-// router.get("/api/admin/support/all-tickets?status=open&priority=high", authMiddleware, supportController.getAllTickets)
+// // Get ticket by ID (with full info)
+// router.get('/admin/:ticketId', authMiddleware, isAdmin, supportController.getTicketByIdAdmin);
 
+// // Reply to a ticket
+// router.post('/admin/reply/:ticketId', authMiddleware, isAdmin, supportController.replyToTicketAdmin);
 
-// // View ticket by ID
-    
-// // router.get("/api/admin/support/ticket/:ticketId", authMiddleware, supportController.getTicketById)
-// // // Reply to ticket
-// // router.post("/api/admin/support/ticket/:ticketId/reply", authMiddleware, supportController.replyToTicketAdmin)
-
-
-// // Assign admin to ticket
-// router.put("/api/admin/support/ticket/:ticketId/assign/:adminId", authMiddleware, supportController.assignTicketToAdmin)
-
+// // Assign ticket to an admin
+// router.post('/admin/assign/:ticketId/:adminId', authMiddleware, isAdmin, supportController.assignTicketToAdmin);
 
 // // Update ticket status
-// // PUT     /api/admin/support/ticket/:ticketId/status   // body: { status: 'in_progress' | 'resolved' | 'closed' }
-// router.put(" /api/admin/support/ticket/:ticketId/status", authMiddleware, supportController.updateTicketStatus)
-// // Download attachments (URLs usually served via CDN / S3)
-// router.get("/api/admin/support/ticket/:ticketId/download/:filename", authMiddleware, supportController.downloadAttachment)
-module.exports = router;
+// router.patch('/admin/status/:ticketId', authMiddleware, isAdmin, supportController.updateTicketStatus);
 
+// // Close a ticket
+// router.patch('/admin/close/:ticketId', authMiddleware, isAdmin, supportController.closeTicket);
+
+// // View feedback
+// router.get('/admin/feedback/:ticketId', authMiddleware, isAdmin, supportController.getFeedback);
+
+
+
+module.exports = router;

@@ -1,20 +1,55 @@
 const mongoose = require('mongoose');
 
 const ticketReplySchema = new mongoose.Schema({
-  senderRole: { type: String, enum: ['seller', 'admin'], required: true },
-  senderId: { type: mongoose.Schema.Types.ObjectId, refPath: 'replies.senderRole', required: true },
-  message: { type: String, required: true },
-  attachments: [{ type: String }], // array of URLs
-  repliedAt: { type: Date, default: Date.now }
+  senderRole: { 
+    type: String, 
+    enum: ['seller', 'admin'], 
+    required: true 
+  },
+  senderId: { 
+    type: mongoose.Schema.Types.ObjectId, 
+    refPath: 'senderRole',  // Corrected here
+    required: true 
+  },
+  message: { 
+    type: String, 
+    required: true 
+  },
+  attachments: [{ 
+    type: String, 
+    default: [] 
+  }], // array of URLs
+  repliedAt: { 
+    type: Date, 
+    default: Date.now 
+  }
 }, { _id: false });
 
 const supportTicketSchema = new mongoose.Schema({
-  ticketId: { type: String, required: true, unique: true }, // e.g. TKT20250715XYZ
-  seller: { type: mongoose.Schema.Types.ObjectId, ref: 'Seller', required: true },
+  ticketId: { 
+    type: String, 
+    required: true, 
+    unique: true 
+  }, // e.g. TKT20250715XYZ
 
-  subject: { type: String, required: true },
-  description: { type: String, required: true },
-  attachments: [{ type: String }], // initial attachments
+  seller: { 
+    type: mongoose.Schema.Types.ObjectId, 
+    ref: 'Seller', 
+    required: true 
+  },
+
+  subject: { 
+    type: String, 
+    required: true 
+  },
+  description: { 
+    type: String, 
+    required: true 
+  },
+  attachments: [{ 
+    type: String, 
+    default: [] 
+  }], // initial attachments
 
   priority: {
     type: String,
@@ -27,18 +62,14 @@ const supportTicketSchema = new mongoose.Schema({
     default: 'open'
   },
 
-  assignedTo: { type: mongoose.Schema.Types.ObjectId, ref: 'Admin' }, 
+  assignedTo: { 
+    type: mongoose.Schema.Types.ObjectId, 
+    ref: 'Admin',
+    default: null
+  }, 
 
   replies: [ticketReplySchema],
 
-  createdAt: { type: Date, default: Date.now },
-  updatedAt: { type: Date, default: Date.now }
-});
-
-// Auto-update `updatedAt`
-supportTicketSchema.pre('save', function (next) {
-  this.updatedAt = Date.now();
-  next();
-});
+}, { timestamps: true });  // Automatically adds createdAt and updatedAt
 
 module.exports = mongoose.model('SupportTicket', supportTicketSchema);
